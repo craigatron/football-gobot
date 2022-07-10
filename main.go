@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -23,7 +22,7 @@ var buildCommit string
 var buildDate string
 
 func main() {
-	fmt.Printf("build at commit %s on %s", buildCommit, buildDate)
+	log.Printf("build at commit %s on %s", buildCommit, buildDate)
 
 	config, err := loadConfig()
 	if err != nil {
@@ -48,12 +47,12 @@ func main() {
 		log.Fatalf("Error opening connection: %s", err)
 	}
 
-	fmt.Println("FOOTBALL GOBOT ONLINE")
+	log.Println("FOOTBALL GOBOT ONLINE")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	fmt.Println("FOOTBALL GOBOT POWERING DOWN")
+	log.Println("FOOTBALL GOBOT POWERING DOWN")
 	dg.Close()
 }
 
