@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -13,11 +14,11 @@ import (
 
 var botID string
 
-//go:generate sh -c "printf %s $(git rev-parse --short HEAD) > buildCommit.txt"
+//go:generate sh -c "printf %s $(git rev-parse HEAD) > buildCommit.txt"
 //go:embed buildCommit.txt
 var buildCommit string
 
-//go:generate sh -c "printf %s $(date) > buildDate.txt"
+//go:generate sh -c "printf %s $(date --iso-8601=minutes) > buildDate.txt"
 //go:embed buildDate.txt
 var buildDate string
 
@@ -41,6 +42,18 @@ func main() {
 	botID = u.ID
 
 	dg.AddHandler(messageHandler)
+
+	command := &discordgo.ApplicationCommand{
+		Name:        "bot-version",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "See what version of FOOTBALL GOBOT is active",
+	}
+	_, err = dg.ApplicationCommandCreate(config.AppID, "", command)
+	if err != nil {
+		log.Fatalf("Error creating application command: %s", err)
+	}
+
+	dg.AddHandler(commandHandler)
 
 	err = dg.Open()
 	if err != nil {
@@ -84,5 +97,28 @@ func checkReaccs(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	if strings.Contains(message, "butt") {
 		s.MessageReactionAdd(m.ChannelID, m.ID, "🍑")
+	}
+}
+
+func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
+	data := i.ApplicationCommandData()
+	switch data.Name {
+	case "bot-version":
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					{
+						Title:       "FOOTBALL GOBOT",
+						URL:         fmt.Sprintf("https://github.com/craigatron/football-gobot/tree/%s", buildCommit),
+						Description: fmt.Sprintf("Built %s at commit hash %s", buildDate, buildCommit),
+					},
+				},
+			},
+		})
 	}
 }

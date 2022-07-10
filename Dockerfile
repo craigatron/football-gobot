@@ -2,6 +2,9 @@ FROM golang:1.18-alpine AS build
 
 WORKDIR /app
 
+RUN apt-get -y update
+RUN apt-get -y install git
+
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download

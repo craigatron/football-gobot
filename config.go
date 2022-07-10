@@ -11,6 +11,7 @@ import (
 )
 
 type configType struct {
+	AppID string `json:"appId"`
 	Token string `json:"token"`
 }
 
