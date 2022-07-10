@@ -2,8 +2,8 @@ FROM golang:1.18-alpine AS build
 
 WORKDIR /app
 
-RUN apt-get -y update
-RUN apt-get -y install git
+RUN apk update
+RUN apk add git
 
 COPY go.mod ./
 COPY go.sum ./
