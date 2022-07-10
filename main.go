@@ -14,12 +14,7 @@ import (
 
 var botID string
 
-//go:generate sh -c "printf %s $(git rev-parse HEAD) > buildCommit.txt"
-//go:embed buildCommit.txt
 var buildCommit string
-
-//go:generate sh -c "printf %s $(date --iso-8601=minutes) > buildDate.txt"
-//go:embed buildDate.txt
 var buildDate string
 
 func main() {

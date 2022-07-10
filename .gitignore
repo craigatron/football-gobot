@@ -18,5 +18,3 @@ vendor/
 go.work
 
 config.json
-buildCommit.txt
-buildDate.txt
