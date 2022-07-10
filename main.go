@@ -13,12 +13,12 @@ import (
 
 var botID string
 
-// go:generate sh -c "printf %s $(git rev-parse --short HEAD) > buildCommit.txt"
-// go:embed buildCommit.txt
+//go:generate sh -c "printf %s $(git rev-parse --short HEAD) > buildCommit.txt"
+//go:embed buildCommit.txt
 var buildCommit string
 
-// go:generate sh -c "printf %s $(date) > buildDate.txt"
-// go:embed buildDate.txt
+//go:generate sh -c "printf %s $(date) > buildDate.txt"
+//go:embed buildDate.txt
 var buildDate string
 
 func main() {
