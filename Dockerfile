@@ -8,7 +8,8 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN go build -o /football-gobot
+RUN go generate
+RUN go build -v -o /football-gobot
 
 FROM alpine:3.16
 COPY --from=build football-gobot .

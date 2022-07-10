@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +14,17 @@ import (
 
 var botID string
 
+// go:generate sh -c "printf %s $(git rev-parse --short HEAD) > buildCommit.txt"
+// go:embed buildCommit.txt
+var buildCommit string
+
+// go:generate sh -c "printf %s $(date) > buildDate.txt"
+// go:embed buildDate.txt
+var buildDate string
+
 func main() {
+	fmt.Printf("build at commit %s on %s", buildCommit, buildDate)
+
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatalf("Could not load config file: %s", err)
