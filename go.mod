@@ -7,6 +7,8 @@ require (
 	github.com/bwmarrin/discordgo v0.25.0
 )
 
+replace github.com/bwmarrin/discordgo v0.25.0 => github.com/bwmarrin/discordgo v0.25.1-0.20220703185115-4e021d914065
+
 require (
 	cloud.google.com/go v0.102.1 // indirect
 	cloud.google.com/go/compute v1.7.0 // indirect
