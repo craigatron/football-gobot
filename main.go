@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -20,12 +21,12 @@ var buildDate string
 func main() {
 	log.Printf("build at commit %s on %s", buildCommit, buildDate)
 
-	config, err := loadConfig()
+	err := loadConfig()
 	if err != nil {
 		log.Fatalf("Could not load config file: %s", err)
 	}
 
-	dg, err := discordgo.New("Bot " + config.Token)
+	dg, err := discordgo.New("Bot " + botConfig.Token)
 	if err != nil {
 		log.Fatalf("Error creating Discord session: %s", err)
 	}
@@ -43,7 +44,7 @@ func main() {
 		Type:        discordgo.ChatApplicationCommand,
 		Description: "See what version of FOOTBALL GOBOT is active",
 	}
-	_, err = dg.ApplicationCommandCreate(config.AppID, "", command)
+	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
 	if err != nil {
 		log.Fatalf("Error creating application command: %s", err)
 	}
@@ -81,17 +82,18 @@ func checkReaccs(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	message := strings.ToLower(m.Content)
-	if strings.Contains(message, "69") {
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🇳")
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🇮")
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🇨")
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🇪")
-	}
-	if strings.Contains(message, "football") {
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🏈")
-	}
-	if strings.Contains(message, "butt") {
-		s.MessageReactionAdd(m.ChannelID, m.ID, "🍑")
+	for _, reacc := range botConfig.ReaccConfig.Reaccs {
+		match, _ := regexp.MatchString(reacc.Pattern, message)
+		if match {
+			for _, ignoreConfig := range botConfig.ReaccConfig.IgnoreReaccs {
+				if ignoreConfig.IgnoreReacc == reacc.Reacc && ignoreConfig.UserID == m.Author.ID {
+					continue
+				}
+			}
+			for _, reaccChar := range reacc.Reacc {
+				s.MessageReactionAdd(m.ChannelID, m.ID, string(reaccChar))
+			}
+		}
 	}
 }
 
