@@ -11,9 +11,18 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/craigatron/espn-fantasy-go"
+	"github.com/craigatron/sleeper-go"
 )
 
+type leagueClient struct {
+	LeagueType    LeagueType
+	ESPNLeague    *espn.League
+	SleeperLeague *sleeper.League
+}
+
 var botID string
+var leaguesByCategory map[string]leagueClient
 
 var buildCommit string
 var buildDate string
@@ -24,6 +33,11 @@ func main() {
 	err := loadConfig()
 	if err != nil {
 		log.Fatalf("Could not load config file: %s", err)
+	}
+
+	err = loadLeagues()
+	if err != nil {
+		log.Fatalf("Error initializing FFL leagues: %s", err)
 	}
 
 	dg, err := discordgo.New("Bot " + botConfig.Token)
@@ -63,6 +77,41 @@ func main() {
 
 	log.Println("FOOTBALL GOBOT POWERING DOWN")
 	dg.Close()
+}
+
+func loadLeagues() error {
+	leaguesByCategory = make(map[string]leagueClient)
+	for _, l := range botConfig.LeagueConfig {
+		if l.LeagueType == "sleeper" {
+			league, err := sleeper.NewLeague(l.ID, botConfig.SleeperConfig.Token)
+			if err != nil {
+				return err
+			}
+			leaguesByCategory[l.DiscordCategoryID] = leagueClient{
+				LeagueType:    LeagueTypeSleeper,
+				SleeperLeague: &league,
+			}
+		} else if l.LeagueType == "espn" {
+			var league espn.League
+			var err error
+			if botConfig.ESPNConfig.ESPNS2 == "" && botConfig.ESPNConfig.SWID == "" {
+				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, 2022)
+			} else {
+				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, 2022, botConfig.ESPNConfig.ESPNS2, botConfig.ESPNConfig.SWID)
+			}
+			if err != nil {
+				return err
+			}
+			leaguesByCategory[l.DiscordCategoryID] = leagueClient{
+				LeagueType: LeagueTypeESPN,
+				ESPNLeague: &league,
+			}
+
+		} else {
+			return fmt.Errorf("unknown league type %s", l.LeagueType)
+		}
+	}
+	return nil
 }
 
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {

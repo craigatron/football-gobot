@@ -1,3 +1,37 @@
 {
-  "token": "DISCORD_BOT_TOKEN"
+  "appId": "DISCORD_APP_ID",
+  "token": "DISCORD_BOT_TOKEN",
+  "reacc_config": {
+    "reaccs": [
+      {
+        "pattern": ".*football.*",
+        "reacc": "🏈"
+      },
+      {
+        "pattern": ".*chonk.*",
+        "reacc": "🇨🇭🇴🇳🇰"
+      }
+    ],
+    "ignore_reaccs": [
+      {
+        "user_id": "DISCORD_USER_ID",
+        "ignore_reacc": "🏈"
+      }
+    ]
+  },
+  "espn_config": {
+    "swid": "ESPN_SWID_TOKEN",
+    "s2": "ESPN_S2_TOKEN"
+  },
+  "sleeper_config": {
+    "token": "SLEEPER_TOKEN"
+  },
+  "leagues": [
+    {
+      "name": "LEAGUE NAME",
+      "type": "sleeper|espn",
+      "id": "league ID",
+      "discord_category_id": "DISCORD_CATEGORY_ID"
+    }
+  ]
 }
