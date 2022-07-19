@@ -8,7 +8,11 @@ on:
 
 jobs:
   ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix: { dir: ["bot", "config", "cf/update-activity"] }
+
     steps:
       - uses: actions/checkout@v3
 
@@ -17,47 +21,26 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Verify bot dependencies
-        run: cd bot && go mod verify
+      - name: Verify dependencies
+        run: cd ${{ matrix.dir }} && go mod verify
 
-      - name: Verify config dependencies
-        run: cd config && go mod verify
+      - name: Build
+        run: cd ${{ matrix.dir }} && go build -v ./...
 
-      - name: Verify cf/update-activity dependencies
-        run: cd cf/update-activity && go mod verify
-
-      - name: Build bot
-        run: cd bot && go build -v ./...
-
-      - name: Build cf/update-activity
-        run: cd cf/update-activity && go build -v ./...
-
-      - name: Run go vet on bot
-        run: cd bot && go vet ./...
-
-      - name: Run go vet on config
-        run: cd config && go vet ./...
-
-      - name: Run go vet on cf/update-activity
-        run: cd cf/update-activity && go vet ./...
+      - name: Run go vet
+        run: cd ${{ matrix.dir }} && go vet ./...
 
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: Run staticcheck
-        run: staticcheck ./...
+        run: cd ${{ matrix.dir }} && staticcheck ./...
 
       - name: Install golint
         run: go install golang.org/x/lint/golint@latest
 
       - name: Run golint
-        run: golint -set_exit_status ./...
+        run: cd ${{ matrix.dir }} && golint -set_exit_status ./...
 
-      - name: Run bot tests
-        run: cd bot && go test -v -race -vet=off ./...
-
-      - name: Run config tests
-        run: cd config && go test -v -race -vet=off ./...
-
-      - name: Run cf/update-activity tests
-        run: cd cf/update-activity && go test -v -race -vet=off ./...
+      - name: Run tests
+        run: cd ${{ matrix.dir }} && go test -v -race -vet=off ./...
