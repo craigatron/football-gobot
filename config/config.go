@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"context"
@@ -10,19 +10,8 @@ import (
 	"cloud.google.com/go/storage"
 )
 
-// LeagueType is the type of league represented by a particular Discord category.
-type LeagueType int32
-
-const (
-	// LeagueTypeESPN is an ESPN fantasy football league.
-	LeagueTypeESPN LeagueType = iota
-	// LeagueTypeSleeper is a Sleeper fantasy football league.
-	LeagueTypeSleeper
-)
-
-var botConfig configType
-
-type configType struct {
+// Conf is the JSON config for various football-gobot mods.
+type Conf struct {
 	AppID string `json:"appId"`
 	Token string `json:"token"`
 
@@ -55,36 +44,33 @@ type configType struct {
 	} `json:"leagues"`
 }
 
-func loadConfig() error {
+// LoadConfig fetches the config from GCS.
+func LoadConfig() (Conf, error) {
 	configBucket := os.Getenv("CONFIG_BUCKET")
 	configObject := os.Getenv("CONFIG_OBJECT")
+
+	c := Conf{}
 	if configBucket == "" || configObject == "" {
-		return errors.New("no CONFIG_BUCKET and/or CONFIG_OBJECT provided")
+		return c, errors.New("no CONFIG_BUCKET and/or CONFIG_OBJECT provided")
 	}
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return err
+		return c, err
 	}
 
 	r, err := client.Bucket(configBucket).Object(configObject).NewReader(ctx)
 	if err != nil {
-		return err
+		return c, err
 	}
 
 	f, err := ioutil.ReadAll(r)
 	r.Close()
 	if err != nil {
-		return err
+		return c, err
 	}
 
-	config := configType{}
-	err = json.Unmarshal(f, &config)
-
-	if err == nil {
-		botConfig = config
-	}
-
-	return err
+	err = json.Unmarshal(f, &c)
+	return c, err
 }
