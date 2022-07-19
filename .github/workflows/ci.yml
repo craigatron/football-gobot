@@ -17,14 +17,29 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Verify dependencies
-        run: go mod verify
+      - name: Verify bot dependencies
+        run: cd bot && go mod verify
 
-      - name: Build
-        run: go generate && go build -v ./...
+      - name: Verify config dependencies
+        run: cd config && go mod verify
 
-      - name: Run go vet
-        run: go vet ./...
+      - name: Verify cf/update-activity dependencies
+        run: cd cf/update-activity && go mod verify
+
+      - name: Build bot
+        run: cd bot && go build -v ./...
+
+      - name: Build cf/update-activity
+        run: cd cf/update-activity && go build -v ./...
+
+      - name: Run go vet on bot
+        run: cd bot && go vet ./...
+
+      - name: Run go vet on config
+        run: cd config && go vet ./...
+
+      - name: Run go vet on cf/update-activity
+        run: cd cf/update-activity && go vet ./...
 
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -38,5 +53,11 @@ jobs:
       - name: Run golint
         run: golint -set_exit_status ./...
 
-      - name: Run tests
-        run: go test -v -race -vet=off ./...
+      - name: Run bot tests
+        run: cd bot && go test -v -race -vet=off ./...
+
+      - name: Run config tests
+        run: cd config && go test -v -race -vet=off ./...
+
+      - name: Run cf/update-activity tests
+        run: cd cf/update-activity && go test -v -race -vet=off ./...
