@@ -8,13 +8,12 @@ WORKDIR /app
 RUN apk update
 RUN apk add git
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
+COPY bot ./bot
+COPY config ./config
+RUN cd config && go mod download
+RUN cd bot && go mod download
 
-COPY *.go ./
-
-RUN go build -ldflags "-X 'main.buildCommit=${BUILD_COMMIT}' -X 'main.buildDate=${BUILD_DATE}'" -v -o /football-gobot
+RUN cd bot && go build -ldflags "-X 'main.buildCommit=${BUILD_COMMIT}' -X 'main.buildDate=${BUILD_DATE}'" -v -o /football-gobot
 
 FROM alpine:3.16
 COPY --from=build football-gobot .

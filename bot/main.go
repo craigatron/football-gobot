@@ -12,6 +12,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/craigatron/espn-fantasy-go"
+	"github.com/craigatron/football-gobot/config"
 	"github.com/craigatron/sleeper-go"
 )
 
@@ -22,6 +23,7 @@ type leagueClient struct {
 }
 
 var botID string
+var botConfig config.ConfigType
 var leaguesByCategory map[string]leagueClient
 
 var buildCommit string
@@ -30,7 +32,7 @@ var buildDate string
 func main() {
 	log.Printf("build at commit %s on %s", buildCommit, buildDate)
 
-	err := loadConfig()
+	botConfig, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Could not load config file: %s", err)
 	}
