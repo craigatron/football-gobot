@@ -10,7 +10,8 @@ import (
 	"cloud.google.com/go/storage"
 )
 
-type ConfigType struct {
+// Conf is the JSON config for various football-gobot mods.
+type Conf struct {
 	AppID string `json:"appId"`
 	Token string `json:"token"`
 
@@ -43,11 +44,12 @@ type ConfigType struct {
 	} `json:"leagues"`
 }
 
-func LoadConfig() (ConfigType, error) {
+// LoadConfig fetches the config from GCS.
+func LoadConfig() (Conf, error) {
 	configBucket := os.Getenv("CONFIG_BUCKET")
 	configObject := os.Getenv("CONFIG_OBJECT")
 
-	c := ConfigType{}
+	c := Conf{}
 	if configBucket == "" || configObject == "" {
 		return c, errors.New("no CONFIG_BUCKET and/or CONFIG_OBJECT provided")
 	}

@@ -23,7 +23,7 @@ type leagueClient struct {
 }
 
 var botID string
-var botConfig config.ConfigType
+var botConfig config.Conf
 var leaguesByCategory map[string]leagueClient
 
 var buildCommit string
