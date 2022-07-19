@@ -23,7 +23,7 @@ type leagueClient struct {
 }
 
 var botID string
-var botConfig config.Conf
+var botConfig *config.Conf
 var leaguesByCategory map[string]leagueClient
 
 var buildCommit string
@@ -32,10 +32,11 @@ var buildDate string
 func main() {
 	log.Printf("build at commit %s on %s", buildCommit, buildDate)
 
-	botConfig, err := config.LoadConfig()
+	bc, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Could not load config file: %s", err)
 	}
+	botConfig = &bc
 
 	err = loadLeagues()
 	if err != nil {
@@ -59,6 +60,15 @@ func main() {
 		Name:        "bot-version",
 		Type:        discordgo.ChatApplicationCommand,
 		Description: "See what version of FOOTBALL GOBOT is active",
+	}
+	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
+	if err != nil {
+		log.Fatalf("Error creating application command: %s", err)
+	}
+	command = &discordgo.ApplicationCommand{
+		Name:        "debug",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "Get debug info about GOBOT",
 	}
 	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
 	if err != nil {
@@ -153,6 +163,14 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
+	channel, err := s.Channel(i.ChannelID)
+	if err != nil {
+		log.Printf("error getting channel: %s", err)
+		return
+	}
+
+	league := leaguesByCategory[channel.ParentID]
+
 	data := i.ApplicationCommandData()
 	switch data.Name {
 	case "bot-version":
@@ -164,6 +182,39 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 						Title:       "FOOTBALL GOBOT",
 						URL:         fmt.Sprintf("https://github.com/craigatron/football-gobot/tree/%s", buildCommit),
 						Description: fmt.Sprintf("Built %s at commit hash %s", buildDate, buildCommit),
+					},
+				},
+			},
+		})
+	case "debug":
+		var leagueID string
+		if league.LeagueType == LeagueTypeESPN {
+			leagueID = league.ESPNLeague.LeagueId
+		} else if league.LeagueType == LeagueTypeSleeper {
+			leagueID = league.SleeperLeague.ID
+		} else {
+			leagueID = "N/A"
+		}
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Embeds: []*discordgo.MessageEmbed{
+					{
+						Description: "debug info",
+						Fields: []*discordgo.MessageEmbedField{
+							{
+								Name:  "Discord Category ID",
+								Value: channel.ParentID,
+							},
+							{
+								Name:  "League Type",
+								Value: league.LeagueType.String(),
+							},
+							{
+								Name:  "League ID",
+								Value: leagueID,
+							},
+						},
 					},
 				},
 			},
