@@ -13,6 +13,7 @@ import (
 	"github.com/craigatron/sleeper-go"
 )
 
+// LeagueConfigJSON is the JSON config for an individual league.
 type LeagueConfigJSON struct {
 	LeagueType         string   `json:"type"`
 	Name               string   `json:"name"`
@@ -80,11 +81,13 @@ func LoadConfig() (JSON, error) {
 	return c, err
 }
 
+// LeagueClientsKey is a key in the map returned by CreateLeagueClients.
 type LeagueClientsKey struct {
 	LeagueType LeagueType
 	LeagueID   string
 }
 
+// LeagueClient is an ESPN or Sleeper league client.
 type LeagueClient struct {
 	LeagueType    LeagueType
 	ESPNLeague    *espn.League
@@ -92,7 +95,7 @@ type LeagueClient struct {
 	LeagueConfig  *LeagueConfigJSON
 }
 
-const ESPN_YEAR = 2022
+const espnYear = 2022
 
 // CreateLeagueClients creates ESPN/Sleeper clients based on the given config.
 func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
@@ -114,9 +117,9 @@ func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 			var league espn.League
 			var err error
 			if c.ESPNConfig.ESPNS2 == "" && c.ESPNConfig.SWID == "" {
-				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, ESPN_YEAR)
+				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, espnYear)
 			} else {
-				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, ESPN_YEAR, c.ESPNConfig.ESPNS2, c.ESPNConfig.SWID)
+				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, espnYear, c.ESPNConfig.ESPNS2, c.ESPNConfig.SWID)
 			}
 			if err != nil {
 				return clients, err
