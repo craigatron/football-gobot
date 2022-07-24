@@ -37,10 +37,10 @@ type Conf struct {
 	} `json:"sleeper_config"`
 
 	LeagueConfig []struct {
-		LeagueType        string `json:"type"`
-		Name              string `json:"name"`
-		ID                string `json:"id"`
-		DiscordCategoryID string `json:"discord_category_id"`
+		LeagueType         string   `json:"type"`
+		Name               string   `json:"name"`
+		ID                 string   `json:"id"`
+		DiscordCategoryIDs []string `json:"discord_category_ids"`
 	} `json:"leagues"`
 }
 
