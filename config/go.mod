@@ -2,7 +2,11 @@ module github.com/craigatron/football-gobot/config
 
 go 1.18
 
-require cloud.google.com/go/storage v1.23.0
+require (
+	cloud.google.com/go/storage v1.23.0
+	github.com/craigatron/espn-fantasy-go v0.0.1
+	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113
+)
 
 require (
 	cloud.google.com/go v0.102.1 // indirect
