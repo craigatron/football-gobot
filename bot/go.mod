@@ -4,9 +4,7 @@ go 1.18
 
 require (
 	github.com/bwmarrin/discordgo v0.25.0
-	github.com/craigatron/espn-fantasy-go v0.0.1
 	github.com/craigatron/football-gobot/config v0.0.0
-	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113
 )
 
 replace github.com/craigatron/football-gobot/config => ../config
@@ -16,6 +14,8 @@ require (
 	cloud.google.com/go/compute v1.7.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.23.0 // indirect
+	github.com/craigatron/espn-fantasy-go v0.0.1 // indirect
+	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
