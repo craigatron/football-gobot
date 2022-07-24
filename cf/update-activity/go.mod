@@ -4,7 +4,9 @@ go 1.18
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.5.3
+	github.com/craigatron/espn-fantasy-go v0.0.1
 	github.com/craigatron/football-gobot/config v0.0.0
+	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113
 )
 
 replace github.com/craigatron/football-gobot/config => ../../config

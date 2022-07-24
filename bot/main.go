@@ -24,7 +24,7 @@ type leagueClient struct {
 
 var botID string
 var botConfig *config.Conf
-var leaguesByCategory map[string]leagueClient
+var leaguesByCategory map[string]*leagueClient
 
 var buildCommit string
 var buildDate string
@@ -92,16 +92,19 @@ func main() {
 }
 
 func loadLeagues() error {
-	leaguesByCategory = make(map[string]leagueClient)
+	leaguesByCategory = make(map[string]*leagueClient)
 	for _, l := range botConfig.LeagueConfig {
 		if l.LeagueType == "sleeper" {
 			league, err := sleeper.NewLeague(l.ID, botConfig.SleeperConfig.Token)
 			if err != nil {
 				return err
 			}
-			leaguesByCategory[l.DiscordCategoryID] = leagueClient{
+			lc := &leagueClient{
 				LeagueType:    LeagueTypeSleeper,
 				SleeperLeague: &league,
+			}
+			for _, discordID := range l.DiscordCategoryIDs {
+				leaguesByCategory[discordID] = lc
 			}
 		} else if l.LeagueType == "espn" {
 			var league espn.League
@@ -114,9 +117,12 @@ func loadLeagues() error {
 			if err != nil {
 				return err
 			}
-			leaguesByCategory[l.DiscordCategoryID] = leagueClient{
+			lc := &leagueClient{
 				LeagueType: LeagueTypeESPN,
 				ESPNLeague: &league,
+			}
+			for _, discordID := range l.DiscordCategoryIDs {
+				leaguesByCategory[discordID] = lc
 			}
 
 		} else {
@@ -169,7 +175,11 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	league := leaguesByCategory[channel.ParentID]
+	league, ok := leaguesByCategory[channel.ParentID]
+	if !ok {
+		log.Printf("no league mapped for channel %s with category ID %s", channel.ID, channel.ParentID)
+		return
+	}
 
 	data := i.ApplicationCommandData()
 	switch data.Name {
