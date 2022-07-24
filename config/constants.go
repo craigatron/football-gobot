@@ -1,4 +1,4 @@
-package main
+package config
 
 // LeagueType is the type of league represented by a particular Discord category.
 type LeagueType int32

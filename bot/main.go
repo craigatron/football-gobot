@@ -11,20 +11,12 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/craigatron/espn-fantasy-go"
 	"github.com/craigatron/football-gobot/config"
-	"github.com/craigatron/sleeper-go"
 )
 
-type leagueClient struct {
-	LeagueType    LeagueType
-	ESPNLeague    *espn.League
-	SleeperLeague *sleeper.League
-}
-
 var botID string
-var botConfig *config.Conf
-var leaguesByCategory map[string]*leagueClient
+var botConfig *config.JSON
+var leaguesByCategory map[string]*config.LeagueClient
 
 var buildCommit string
 var buildDate string
@@ -92,41 +84,15 @@ func main() {
 }
 
 func loadLeagues() error {
-	leaguesByCategory = make(map[string]*leagueClient)
-	for _, l := range botConfig.LeagueConfig {
-		if l.LeagueType == "sleeper" {
-			league, err := sleeper.NewLeague(l.ID, botConfig.SleeperConfig.Token)
-			if err != nil {
-				return err
-			}
-			lc := &leagueClient{
-				LeagueType:    LeagueTypeSleeper,
-				SleeperLeague: &league,
-			}
-			for _, discordID := range l.DiscordCategoryIDs {
-				leaguesByCategory[discordID] = lc
-			}
-		} else if l.LeagueType == "espn" {
-			var league espn.League
-			var err error
-			if botConfig.ESPNConfig.ESPNS2 == "" && botConfig.ESPNConfig.SWID == "" {
-				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, 2022)
-			} else {
-				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, 2022, botConfig.ESPNConfig.ESPNS2, botConfig.ESPNConfig.SWID)
-			}
-			if err != nil {
-				return err
-			}
-			lc := &leagueClient{
-				LeagueType: LeagueTypeESPN,
-				ESPNLeague: &league,
-			}
-			for _, discordID := range l.DiscordCategoryIDs {
-				leaguesByCategory[discordID] = lc
-			}
+	leagues, err := config.CreateLeagueClients(*botConfig)
+	if err != nil {
+		return err
+	}
 
-		} else {
-			return fmt.Errorf("unknown league type %s", l.LeagueType)
+	leaguesByCategory = make(map[string]*config.LeagueClient)
+	for _, v := range leagues {
+		for _, d := range v.LeagueConfig.DiscordCategoryIDs {
+			leaguesByCategory[d] = v
 		}
 	}
 	return nil
@@ -198,9 +164,9 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		})
 	case "debug":
 		var leagueID string
-		if league.LeagueType == LeagueTypeESPN {
+		if league.LeagueType == config.LeagueTypeESPN {
 			leagueID = league.ESPNLeague.LeagueId
-		} else if league.LeagueType == LeagueTypeSleeper {
+		} else if league.LeagueType == config.LeagueTypeSleeper {
 			leagueID = league.SleeperLeague.ID
 		} else {
 			leagueID = "N/A"
