@@ -92,7 +92,7 @@ type LeagueClient struct {
 	LeagueType    LeagueType
 	ESPNLeague    *espn.League
 	SleeperLeague *sleeper.League
-	LeagueConfig  *LeagueConfigJSON
+	LeagueConfig  LeagueConfigJSON
 }
 
 const espnYear = 2022
@@ -110,7 +110,7 @@ func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 			lc := &LeagueClient{
 				LeagueType:    LeagueTypeSleeper,
 				SleeperLeague: &league,
-				LeagueConfig:  &l,
+				LeagueConfig:  l,
 			}
 			clients[LeagueClientsKey{LeagueType: LeagueTypeSleeper, LeagueID: l.ID}] = lc
 		} else if l.LeagueType == "espn" {
@@ -127,7 +127,7 @@ func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 			lc := &LeagueClient{
 				LeagueType:   LeagueTypeESPN,
 				ESPNLeague:   &league,
-				LeagueConfig: &l,
+				LeagueConfig: l,
 			}
 			clients[LeagueClientsKey{LeagueType: LeagueTypeESPN, LeagueID: l.ID}] = lc
 		} else {
