@@ -165,7 +165,7 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "debug":
 		var leagueID string
 		if league.LeagueType == config.LeagueTypeESPN {
-			leagueID = league.ESPNLeague.LeagueId
+			leagueID = league.ESPNLeague.ID
 		} else if league.LeagueType == config.LeagueTypeSleeper {
 			leagueID = league.SleeperLeague.ID
 		} else {

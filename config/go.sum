@@ -80,8 +80,8 @@ github.com/cncf/xds/go v0.0.0-20210805033703-aa0b78936158/go.mod h1:eXthEFrGJvWH
 github.com/cncf/xds/go v0.0.0-20210922020428-25de7278fc84/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cncf/xds/go v0.0.0-20211001041855-01bcc9b48dfe/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
-github.com/craigatron/espn-fantasy-go v0.0.1 h1:FOCLhVzjnqrZB/C2aKTtUep62UZ5LBXyLYDUcMoTV9w=
-github.com/craigatron/espn-fantasy-go v0.0.1/go.mod h1:mZh9rJcKQL6K3nnksvTYB1rHDZdKhcddmjZaEF9qH+8=
+github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2 h1:au2PMGD6vw9c8IxbGtmK7Q8AiHfzywsv8l4FbdsSMS0=
+github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2/go.mod h1:mZh9rJcKQL6K3nnksvTYB1rHDZdKhcddmjZaEF9qH+8=
 github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113 h1:Ogau9m+ghGHbcd0q4NnHjptEOiHfCX1RkKJWERgCgQs=
 github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113/go.mod h1:NTAXa7lR5AM3eg7RDxN09JMbolcu1NiytWPzJBaebzc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

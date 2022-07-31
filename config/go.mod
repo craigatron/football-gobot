@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	cloud.google.com/go/storage v1.23.0
-	github.com/craigatron/espn-fantasy-go v0.0.1
+	github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2
 	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113
 )
 
