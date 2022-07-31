@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	_ "github.com/craigatron/football-gobot/cf/update-activity"
 	updateactivity "github.com/craigatron/football-gobot/cf/update-activity"
 )
 
