@@ -14,7 +14,7 @@ require (
 	cloud.google.com/go/compute v1.7.0 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.23.0 // indirect
-	github.com/craigatron/espn-fantasy-go v0.0.1 // indirect
+	github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2 // indirect
 	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"strconv"
 
 	"cloud.google.com/go/storage"
 	"github.com/craigatron/espn-fantasy-go"
@@ -95,11 +97,24 @@ type LeagueClient struct {
 	LeagueConfig  LeagueConfigJSON
 }
 
-const espnYear = 2022
+const defaultEspnYear = 2022
 
 // CreateLeagueClients creates ESPN/Sleeper clients based on the given config.
 func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 	clients := make(map[LeagueClientsKey]*LeagueClient)
+
+	espnYearOverride := os.Getenv("ESPN_YEAR_OVERRIDE")
+	var espnYear int
+	if espnYearOverride == "" {
+		espnYear = defaultEspnYear
+	} else {
+		var err error
+		espnYear, err = strconv.Atoi(espnYearOverride)
+		log.Printf("overriding default ESPN year with %d", espnYear)
+		if err != nil {
+			return clients, err
+		}
+	}
 
 	for _, l := range c.LeagueConfig {
 		if l.LeagueType == "sleeper" {

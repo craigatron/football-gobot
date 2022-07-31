@@ -3,7 +3,9 @@ module github.com/craigatron/football-gobot/cf/update-activity
 go 1.18
 
 require (
+	cloud.google.com/go/firestore v1.6.1
 	github.com/GoogleCloudPlatform/functions-framework-go v1.5.3
+	github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2
 	github.com/craigatron/football-gobot/config v0.0.0
 )
 
@@ -16,7 +18,6 @@ require (
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.23.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.6.1 // indirect
-	github.com/craigatron/espn-fantasy-go v0.0.1 // indirect
 	github.com/craigatron/sleeper-go v0.0.0-20220716033712-ca98b02ac113 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
