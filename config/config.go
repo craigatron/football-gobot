@@ -6,9 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
-	"strconv"
 
 	"cloud.google.com/go/storage"
 	"github.com/craigatron/espn-fantasy-go"
@@ -21,6 +19,7 @@ type LeagueConfigJSON struct {
 	Name               string   `json:"name"`
 	ID                 string   `json:"id"`
 	DiscordCategoryIDs []string `json:"discord_category_ids"`
+	BotUpdateChannels  []string `json:"bot_update_channels"`
 }
 
 // JSON is the JSON config for various football-gobot mods.
@@ -41,6 +40,7 @@ type JSON struct {
 	} `json:"reacc_config"`
 
 	ESPNConfig struct {
+		Year   int    `json:"year"`
 		SWID   string `json:"swid"`
 		ESPNS2 string `json:"s2"`
 	} `json:"espn_config"`
@@ -97,24 +97,9 @@ type LeagueClient struct {
 	LeagueConfig  LeagueConfigJSON
 }
 
-const defaultEspnYear = 2022
-
 // CreateLeagueClients creates ESPN/Sleeper clients based on the given config.
 func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 	clients := make(map[LeagueClientsKey]*LeagueClient)
-
-	espnYearOverride := os.Getenv("ESPN_YEAR_OVERRIDE")
-	var espnYear int
-	if espnYearOverride == "" {
-		espnYear = defaultEspnYear
-	} else {
-		var err error
-		espnYear, err = strconv.Atoi(espnYearOverride)
-		log.Printf("overriding default ESPN year with %d", espnYear)
-		if err != nil {
-			return clients, err
-		}
-	}
 
 	for _, l := range c.LeagueConfig {
 		if l.LeagueType == "sleeper" {
@@ -132,9 +117,9 @@ func CreateLeagueClients(c JSON) (map[LeagueClientsKey]*LeagueClient, error) {
 			var league espn.League
 			var err error
 			if c.ESPNConfig.ESPNS2 == "" && c.ESPNConfig.SWID == "" {
-				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, espnYear)
+				league, err = espn.NewPublicLeague(espn.GameTypeNfl, l.ID, c.ESPNConfig.Year)
 			} else {
-				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, espnYear, c.ESPNConfig.ESPNS2, c.ESPNConfig.SWID)
+				league, err = espn.NewPrivateLeague(espn.GameTypeNfl, l.ID, c.ESPNConfig.Year, c.ESPNConfig.ESPNS2, c.ESPNConfig.SWID)
 			}
 			if err != nil {
 				return clients, err

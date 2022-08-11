@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/craigatron/football-gobot/config"
@@ -33,6 +34,11 @@ func main() {
 	err = loadLeagues()
 	if err != nil {
 		log.Fatalf("Error initializing FFL leagues: %s", err)
+	}
+
+	err = initFirestoreClient()
+	if err != nil {
+		log.Fatalf("error initializing firestore client: %s", err)
 	}
 
 	dg, err := discordgo.New("Bot " + botConfig.Token)
@@ -61,6 +67,15 @@ func main() {
 		Name:        "debug",
 		Type:        discordgo.ChatApplicationCommand,
 		Description: "Get debug info about GOBOT",
+	}
+	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
+	if err != nil {
+		log.Fatalf("Error creating application command: %s", err)
+	}
+	command = &discordgo.ApplicationCommand{
+		Name:        "activity",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "Show recent activity for this league",
 	}
 	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
 	if err != nil {
@@ -150,50 +165,107 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ApplicationCommandData()
 	switch data.Name {
 	case "bot-version":
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{
-					{
-						Title:       "FOOTBALL GOBOT",
-						URL:         fmt.Sprintf("https://github.com/craigatron/football-gobot/tree/%s", buildCommit),
-						Description: fmt.Sprintf("Built %s at commit hash %s", buildDate, buildCommit),
-					},
+		handleBotVersionCommand(s, i)
+	case "debug":
+		handleDebugCommand(s, i, league, channel)
+	case "activity":
+		handleActivityCommand(s, i, league, channel)
+	}
+}
+
+func handleBotVersionCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "FOOTBALL GOBOT",
+					URL:         fmt.Sprintf("https://github.com/craigatron/football-gobot/tree/%s", buildCommit),
+					Description: fmt.Sprintf("Built %s at commit hash %s", buildDate, buildCommit),
 				},
 			},
-		})
-	case "debug":
-		var leagueID string
-		if league.LeagueType == config.LeagueTypeESPN {
-			leagueID = league.ESPNLeague.ID
-		} else if league.LeagueType == config.LeagueTypeSleeper {
-			leagueID = league.SleeperLeague.ID
-		} else {
-			leagueID = "N/A"
-		}
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{
-					{
-						Description: "debug info",
-						Fields: []*discordgo.MessageEmbedField{
-							{
-								Name:  "Discord Category ID",
-								Value: channel.ParentID,
-							},
-							{
-								Name:  "League Type",
-								Value: league.LeagueType.String(),
-							},
-							{
-								Name:  "League ID",
-								Value: leagueID,
-							},
+		},
+	})
+}
+
+func handleDebugCommand(s *discordgo.Session, i *discordgo.InteractionCreate, league *config.LeagueClient, channel *discordgo.Channel) {
+	var leagueID string
+	if league.LeagueType == config.LeagueTypeESPN {
+		leagueID = league.ESPNLeague.ID
+	} else if league.LeagueType == config.LeagueTypeSleeper {
+		leagueID = league.SleeperLeague.ID
+	} else {
+		leagueID = "N/A"
+	}
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Description: "debug info",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:  "Discord Category ID",
+							Value: channel.ParentID,
+						},
+						{
+							Name:  "League Type",
+							Value: league.LeagueType.String(),
+						},
+						{
+							Name:  "League ID",
+							Value: leagueID,
 						},
 					},
 				},
 			},
+		},
+	})
+}
+
+func handleActivityCommand(s *discordgo.Session, i *discordgo.InteractionCreate, league *config.LeagueClient, channel *discordgo.Channel) {
+	if league.LeagueType != config.LeagueTypeESPN {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: fmt.Sprintf("/activity not implemented for league type %s", league.LeagueType),
+			},
+		})
+		return
+	}
+	fmt.Printf("handling activity command for league %v and channel %v", *league, *channel)
+	recentActivity, err := getRecentESPNActivity(league.ESPNLeague)
+	if err != nil {
+		log.Printf("error getting recent activity: %s\n", err)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "could not get recent activity for league",
+			},
+		})
+		return
+	}
+	fields := make([]*discordgo.MessageEmbedField, 0)
+	for _, ra := range recentActivity {
+		actionStrings := make([]string, 0)
+		for _, action := range ra.Actions {
+			player := league.ESPNLeague.Players[action.PlayerID]
+			actionStrings = append(actionStrings, fmt.Sprintf("%s %s %s (%s, %s)", league.ESPNLeague.Teams[action.TeamID].Name, action.Action, player.FullName, player.Position, player.Team))
+		}
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:  time.UnixMilli(ra.Timestamp).String(),
+			Value: strings.Join(actionStrings, "\n"),
 		})
 	}
+	log.Printf("got recent activity: %v", recentActivity)
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Fields: fields,
+				},
+			},
+		},
+	})
 }

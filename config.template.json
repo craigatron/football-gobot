@@ -20,6 +20,7 @@
     ]
   },
   "espn_config": {
+    "year": 2022,
     "swid": "ESPN_SWID_TOKEN",
     "s2": "ESPN_S2_TOKEN"
   },
