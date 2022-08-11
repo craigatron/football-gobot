@@ -22,7 +22,7 @@ func initFirestoreClient() error {
 	return nil
 }
 
-type RecentActivity struct {
+type recentActivityType struct {
 	Timestamp int64 `firestore:"timestamp"`
 	Actions   []struct {
 		Action   string `firestore:"Action"`
@@ -31,10 +31,10 @@ type RecentActivity struct {
 	} `firestore:"actions"`
 }
 
-func getRecentESPNActivity(league *espn.League) ([]RecentActivity, error) {
+func getRecentESPNActivity(league *espn.League) ([]recentActivityType, error) {
 	ctx := context.Background()
 
-	recentActivity := make([]RecentActivity, 0)
+	recentActivity := make([]recentActivityType, 0)
 	raCollection := firestoreClient.Collection(fmt.Sprintf("leagues/espn-%s/years/%d/activity", league.ID, league.Year))
 
 	q := raCollection.OrderBy("timestamp", firestore.Desc).Limit(10)
@@ -48,7 +48,7 @@ func getRecentESPNActivity(league *espn.League) ([]RecentActivity, error) {
 		if err != nil {
 			return nil, err
 		}
-		ra := RecentActivity{}
+		ra := recentActivityType{}
 		if err := doc.DataTo(&ra); err != nil {
 			return nil, err
 		}
