@@ -130,9 +130,9 @@ func checkReaccs(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// strip out mentions, links, channels, etc.  only reacc the legit stuff.
-	ignore_message_re := regexp.MustCompile(`(<@!\d+>)|(<#\d+>)|(<@\d+>)|(<@&\d+)|((https|http)?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))`)
+	ignoreMessageRe := regexp.MustCompile(`(<@!\d+>)|(<#\d+>)|(<@\d+>)|(<@&\d+)|((https|http)?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))`)
 	message := strings.ToLower(m.Content)
-	message = ignore_message_re.ReplaceAllString(message, "")
+	message = ignoreMessageRe.ReplaceAllString(message, "")
 
 	for _, reacc := range botConfig.ReaccConfig.Reaccs {
 		match, _ := regexp.MatchString(reacc.Pattern, message)
