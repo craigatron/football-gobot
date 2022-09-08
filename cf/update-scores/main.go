@@ -73,6 +73,8 @@ func processESPNLeague(ctx context.Context, fsClient *firestore.Client, league *
 	projectionsCollection := currentWeekDoc.Collection("projections")
 
 	newUpdateTime := time.Now()
+	// UnixMilli doesn't exist in Go 1.16, which is the latest version cloud functions has :(
+	newUpdateMillis := newUpdateTime.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 
 	matchups, err := league.Scoreboard()
 	if err != nil {
@@ -80,19 +82,19 @@ func processESPNLeague(ctx context.Context, fsClient *firestore.Client, league *
 	}
 
 	for _, matchup := range matchups {
-		homeDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateTime.UnixMilli(), matchup.HomeTeam.ID))
+		homeDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateMillis, matchup.HomeTeam.ID))
 		batch.Set(homeDoc, map[string]interface{}{
 			"matchup_id": matchup.ID,
 			"projection": matchup.HomeScore,
 			"team_id":    matchup.HomeTeam.ID,
-			"timestamp":  newUpdateTime.UnixMilli(),
+			"timestamp":  newUpdateMillis,
 		})
-		awayDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateTime.UnixMilli(), matchup.AwayTeam.ID))
+		awayDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateMillis, matchup.AwayTeam.ID))
 		batch.Set(awayDoc, map[string]interface{}{
 			"matchup_id": matchup.ID,
 			"projection": matchup.AwayScore,
 			"team_id":    matchup.AwayTeam.ID,
-			"timestamp":  newUpdateTime.UnixMilli(),
+			"timestamp":  newUpdateMillis,
 		})
 
 	}
@@ -121,6 +123,8 @@ func processSleeperLeague(ctx context.Context, fsClient *firestore.Client, leagu
 	projectionsCollection := currentWeekDoc.Collection("projections")
 
 	newUpdateTime := time.Now()
+	// UnixMilli doesn't exist in Go 1.16, which is the latest version cloud functions has :(
+	newUpdateMillis := newUpdateTime.UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 
 	projections, err := league.GetProjections()
 	if err != nil {
@@ -128,12 +132,12 @@ func processSleeperLeague(ctx context.Context, fsClient *firestore.Client, leagu
 	}
 
 	for _, projection := range projections {
-		homeDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateTime.UnixMilli(), projection.Matchup.RosterID))
+		homeDoc := projectionsCollection.Doc(fmt.Sprintf("%d-%d", newUpdateMillis, projection.Matchup.RosterID))
 		batch.Set(homeDoc, map[string]interface{}{
 			"matchup_id": projection.Matchup.MatchupID,
 			"projection": projection.Projection,
 			"team_id":    projection.Matchup.RosterID,
-			"timestamp":  newUpdateTime.UnixMilli(),
+			"timestamp":  newUpdateMillis,
 		})
 	}
 

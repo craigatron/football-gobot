@@ -17,8 +17,8 @@ require (
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.23.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.6.1 // indirect
-	github.com/craigatron/espn-fantasy-go v0.0.2-0.20220731182059-c6130f269bb2 // indirect
-	github.com/craigatron/sleeper-go v0.0.0-20220828002320-670f897fb59b // indirect
+	github.com/craigatron/espn-fantasy-go v0.0.2-0.20220908003037-8c46118e0ace // indirect
+	github.com/craigatron/sleeper-go v0.0.0-20220907013444-753ab69ad51f // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
