@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        font-family: "Roboto", sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>Week {{.Week}}</h2>
+    <ul>
+      {{range .Matchups}}
+      <li><a href="{{.URL}}">{{.Team1Name}} vs {{.Team2Name}}</a></li>
+      {{end}}
+    </ul>
+  </body>
+</html>
