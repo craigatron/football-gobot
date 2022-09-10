@@ -62,8 +62,8 @@
         const team1Name = "{{.Team1Name}}";
         const team2Name = "{{.Team2Name}}";
   
-        const team1Data = {{.Team1Data}};
-        const team2Data = {{.Team2Data}};
+        const team1Data = JSON.parse({{.Team1Data}});
+        const team2Data = JSON.parse({{.Team2Data}});
   
         var margin = { top: 20, right: 20, bottom: 30, left: 50 },
           width = 960 - margin.left - margin.right,

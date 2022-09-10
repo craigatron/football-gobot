@@ -2,13 +2,14 @@ package updatescores
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"os"
-	"text/template"
 	"time"
 
 	// Need this for cloud functions
@@ -152,7 +153,7 @@ func processESPNLeague(ctx context.Context, fsClient *firestore.Client, league *
 	for _, team := range league.Teams {
 		teamIDToName[int64(team.ID)] = team.Name
 	}
-	writeHTML(projectionBucket, config.LeagueTypeSleeper, league.ID, fmt.Sprintf("%d", league.Year), league.CurrentWeek, teamIDToName, allProjections)
+	writeHTML(projectionBucket, config.LeagueTypeESPN, league.ID, fmt.Sprintf("%d", league.Year), league.CurrentWeek, teamIDToName, allProjections)
 	return nil
 }
 
@@ -255,6 +256,12 @@ type IndexData struct {
 	Matchups []IndexMatchupData
 }
 
+//go:embed matchup.html
+var matchupTemplate string
+
+//go:embed week_index.html
+var indexTemplate string
+
 func writeHTML(projectionBucket *storage.BucketHandle, leagueType config.LeagueType, leagueID string, season string, week int, teamIDToName map[int64]string, projections []Projection) error {
 	log.Printf("generating HTML for %s league %s", leagueType, leagueID)
 
@@ -280,6 +287,11 @@ func writeHTML(projectionBucket *storage.BucketHandle, leagueType config.LeagueT
 	}
 
 	indexData := IndexData{Week: week, Matchups: make([]IndexMatchupData, 0)}
+
+	matchupTmpl, err := template.New("matchupHTML").Parse(matchupTemplate)
+	if err != nil {
+		return err
+	}
 
 	for matchupID := range matchupProjections {
 		thisMatchupProjections := matchupProjections[matchupID]
@@ -309,18 +321,13 @@ func writeHTML(projectionBucket *storage.BucketHandle, leagueType config.LeagueT
 			Team2Data: string(team2Data),
 		}
 
-		tmpl, err := template.ParseFiles("matchup.html")
-		if err != nil {
-			fmt.Printf("err: %s", err)
-		}
-
 		ctx := context.Background()
 		objectName := fmt.Sprintf("%s/%s/%d/%d.html", leagueID, season, week, matchupID)
 		obj := projectionBucket.Object(objectName)
 		w := obj.NewWriter(ctx)
 		w.ContentType = "text/html"
 
-		err = tmpl.Execute(w, templateData)
+		err = matchupTmpl.Execute(w, templateData)
 		if err != nil {
 			return err
 		}
@@ -337,9 +344,9 @@ func writeHTML(projectionBucket *storage.BucketHandle, leagueType config.LeagueT
 	}
 
 	// write index file
-	tmpl, err := template.ParseFiles("week_index.html")
+	tmpl, err := template.New("indexHTML").Parse(indexTemplate)
 	if err != nil {
-		fmt.Printf("err: %s", err)
+		return err
 	}
 
 	ctx := context.Background()
