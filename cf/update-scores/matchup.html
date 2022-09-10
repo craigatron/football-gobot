@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+  <head> 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+        html,
+        body {
+            font-family: "Roboto", sans-serif;
+        }
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+        .line2 {
+            fill: none;
+            stroke: red;
+            stroke-width: 2px;
+        }
+        #legend {
+          margin-left: 20px;
+          display: flex;
+          flex-direction: column;
+        }
+        .legendRow {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        .legendSquare {
+          margin-right: 12px;
+          height: 20px;
+          width: 20px;
+        }
+        .team1 {
+          background-color: steelblue;
+        }
+        .team2 {
+          background-color: red;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h1>{{.Team1Name}} vs {{.Team2Name}}</h1>
+    <div id="chart"></div>
+    <div id="legend">
+        <div class="legendRow">
+          <div class="legendSquare team1"></div>
+          <div>{{.Team1Name}}</div>
+        </div>
+        <div class="legendRow">
+          <div class="legendSquare team2"></div>
+          <div>{{.Team2Name}}</div>
+        </div>
+    </div>
+    <script>
+        const team1Name = "{{.Team1Name}}";
+        const team2Name = "{{.Team2Name}}";
+  
+        const team1Data = {{.Team1Data}};
+        const team2Data = {{.Team2Data}};
+  
+        var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+          width = 960 - margin.left - margin.right,
+          height = 500 - margin.top - margin.bottom;
+  
+        var x = d3.scaleTime().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+  
+        var valueLine = d3
+          .line()
+          .x((d) => x(d3.isoParse(d.timestamp)))
+          .y((d) => y(d.projection));
+        var svg = d3
+          .select("#chart")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var allData = team1Data.concat(team2Data);
+        x.domain(d3.extent(allData, (d) => d3.isoParse(d.timestamp)));
+        y.domain([d3.min(allData, (d) => d.projection), d3.max(allData, (d) => d.projection)]);
+  
+        svg
+          .append("path")
+          .data([team1Data])
+          .attr("class", "line")
+          .attr("d", valueLine);
+        svg
+          .append("path")
+          .data([team2Data])
+          .attr("class", "line2")
+          .attr("d", valueLine);
+        svg
+          .append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x));
+        svg.append("g").call(d3.axisLeft(y));
+      </script>
+  </body>
+</html>
