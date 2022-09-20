@@ -81,6 +81,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating application command: %s", err)
 	}
+	command = &discordgo.ApplicationCommand{
+		Name:        "charts",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "Get link to current projections charts",
+	}
+	_, err = dg.ApplicationCommandCreate(botConfig.AppID, "", command)
+	if err != nil {
+		log.Fatalf("Error creating application command: %s", err)
+	}
 
 	dg.AddHandler(commandHandler)
 
@@ -174,6 +183,8 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		handleDebugCommand(s, i, league, channel)
 	case "activity":
 		handleActivityCommand(s, i, league, channel)
+	case "charts":
+		handleChartsCommand(s, i, league, channel)
 	}
 }
 
@@ -268,6 +279,44 @@ func handleActivityCommand(s *discordgo.Session, i *discordgo.InteractionCreate,
 			Embeds: []*discordgo.MessageEmbed{
 				{
 					Fields: fields,
+				},
+			},
+		},
+	})
+}
+
+func handleChartsCommand(s *discordgo.Session, i *discordgo.InteractionCreate, league *config.LeagueClient, channel *discordgo.Channel) {
+	var week int
+	var season string
+	var id string
+	if league.LeagueType == config.LeagueTypeESPN {
+		week = league.ESPNLeague.CurrentWeek
+		season = fmt.Sprintf("%d", league.ESPNLeague.Year)
+		id = league.ESPNLeague.ID
+	} else if league.LeagueType == config.LeagueTypeSleeper {
+		status, err := league.SleeperLeague.Client.GetNflStatus()
+		if err != nil {
+			log.Printf("error getting sleeper status: %s\n", err)
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "could not get Sleeper league status",
+				},
+			})
+			return
+		}
+		week = status.Week
+		season = league.SleeperLeague.Season
+		id = league.SleeperLeague.ID
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title: fmt.Sprintf("Week %d charts", week),
+					URL:   fmt.Sprintf("https://storage.googleapis.com/%s/%s/%s/%d/index.html", os.Getenv("PROJECTION_BUCKET"), id, season, week),
 				},
 			},
 		},
