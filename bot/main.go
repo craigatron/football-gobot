@@ -36,6 +36,19 @@ func main() {
 		log.Fatalf("Error initializing FFL leagues: %s", err)
 	}
 
+	for _, espnLeague := range leaguesByCategory {
+		if espnLeague.LeagueType == config.LeagueTypeESPN {
+			go func() {
+				for range time.Tick(time.Hour) {
+					fmt.Printf("refreshing ESPN league: %s", espnLeague.ESPNLeague.ID)
+					if err := espnLeague.ESPNLeague.RefreshData(); err != nil {
+						fmt.Printf("error refreshing ESPN data: %s", err)
+					}
+				}
+			}()
+		}
+	}
+
 	err = initFirestoreClient()
 	if err != nil {
 		log.Fatalf("error initializing firestore client: %s", err)
