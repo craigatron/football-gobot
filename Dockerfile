@@ -15,7 +15,7 @@ RUN cd bot && go mod download
 
 RUN cd bot && go build -ldflags "-X 'main.buildCommit=${BUILD_COMMIT}' -X 'main.buildDate=${BUILD_DATE}'" -v -o /football-gobot
 
-FROM alpine:3.16
+FROM alpine:3.17
 COPY --from=build football-gobot .
 
 ENTRYPOINT ["./football-gobot"]
