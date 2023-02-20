@@ -1,4 +1,4 @@
-FROM golang:1.19.1-alpine AS build
+FROM golang:1.20.1-alpine AS build
 
 ARG BUILD_COMMIT=""
 ARG BUILD_DATE=""
